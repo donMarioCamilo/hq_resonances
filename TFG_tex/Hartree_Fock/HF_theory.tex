@@ -1,0 +1,54 @@
+\subsection{Hartree-Fock theory}
+%La herramienta principal que se emplea para resolver el problema de varios cuerpos es el método de Hartree - Fock, fundamental en el estudio de átomos polielectrónicos y moléculas.\\\\
+%Se considera en primer lugar el hamiltoniano de un sistema de $N$ electrones y $K$ núcleos \cite{computationalphysics}.]
+
+%SEE modern-quantum-chemistry 2.2
+%The Hartree-Fock approximation is proposed for dealing with the many-body problem, and consists on reducing it to several single-body problems, in which the interelectronic repulsion is incorporated in an average way. As it's been presented, Hartree did this for the Coulomb repulsion. For taking antisymmetry into account, 
+V.A. Fock extended the Hartree equation by including a nonlocal term, the exchange contribution. The Hartree - Fock equations read \cite{szabo,mcweeny}: 
+\begin{equation}
+	\mathcal{F}\psi_k = \varepsilon_k \psi_k,
+	\mathrm{where}
+	\label{eq:short_HF}
+\end{equation}
+\begin{multline}
+	\mathcal{F}\psi_k = \left[-\frac{1}{2}\nabla^2 - \sum_n\frac{Z_n}{\left|\mathbf{r}-\mathbf{R}_n\right|}\right]\psi_k(q) + \sum_{l=1}^N\int{dq'\left|\psi_l(q')\right|^2\frac{1}{\left|\mathbf{r}-\mathbf{r'}\right|}\psi_k(q)} -\\ -\sum_{l =1}^N\int{dx'\psi_l^*(q')\frac{1}{\left|\mathbf{r}-\mathbf{r'}\right|}\psi_k(q')\psi_l(q)}
+	\label{eq:Hartree_Fock}
+\end{multline}
+
+$\mathcal{F}$ is called the Fock operator. The terms within brackets build up the uncoupled one-electron Hamiltonian $h$. The third (Coulomb) and fourth (exchange) terms compose the Hartree-Fock potential, and respond to the interelectronic interaction. This potential depends on the Fock operator's eigenfunctions $\psi_k$. Therefore, the problem is non-linear and must be solved with the self-consistency-field method introduced in subsection \ref{preliminaries}. %A few comments seem necessary. 
+
+It should be noted that the eigenvalues $\varepsilon_k$ %are Lagrange multipliers and
+do not represent the energies of single electron orbitals. However, they provide the total energy
+\begin{equation}
+    E = \sum_{k=1}^N\left[\ev{\psi_k \left| h\right| \psi_k}+\ev{\psi_k \left|\frac{1}{2}(\tilde{J}-\tilde{K}) \right| \psi_k}\right]=\nonumber\frac{1}{2}\sum_{k=1}^{N}\left(\varepsilon_k+\mel{\psi_k}{h}{\psi_k}\right)
+    \label{eq:energies_heps}
+\end{equation}
+where $\tilde{J}$ and $\tilde{K}$ represent the Coulomb and exchange operators respectively. This expression can be easily deduced by comparing the expected value of the Born-Oppenheimer Hamiltonian (\ref{eq:BO_hamiltonian}) with the Hartree-Fock equation (\ref{eq:Hartree_Fock}).\\\\
+%TODO
+%For readability purposes, a more thorough explanation on (\ref{eq:energies_heps}) and the upcoming energy expressions is presented in the appendix \ref{appendix:energies}.
+
+%It must be noted as well that the auto-coupling problem presented in the Hartree equation (\ref{eq:hart2}) is solved by including the exchange operator, since the Hartree-Fock potential vanishes for $k=l$.
+
+%Finally, in the derivation of (\ref{eq:short_HF}) it is assumed that the solution wave function is restricted to the space of single Slater determinants, i.e. when dealing with a closed-subshell system or a system with one electron outside the closed subshells. If this is not the case, the Hartree-Fock equations happen to be more complicated \cite{computationalphysics, jupyter_levine}.\\\\
+%TODO Koopman's theorem
+For the purpose of this work only closed-shell systems will be studied, which means that all occupied levels are completely filled by two electrons with opposite spin. In this way, all spin orbitals can be grouped by pairs with common orbital dependence and opposite spin \cite{computationalphysics}. Calculations within this constrain are called \emph{restricted Hartree-Fock} (RHF).
+
+This is specially useful for the Hartree-Fock equation (\ref{eq:Hartree_Fock}), since the Fock operator does not depend \textbf{explicitly} on the spin. Then, an operator which only depends on spatial orbitals can be found. By summing over the spin degrees of freedom an equivalent Hartree-Fock equation is derived
+\begin{equation}
+	F(\mathbf{r})\phi(\mathbf{r}) = \left(h(\mathbf{r})+2J (\mathbf{r})-K (\mathbf{r})\right)\phi (\mathbf{r})=\varepsilon\phi (\mathbf{r})
+	\label{eq:new_HF}
+\end{equation}
+with $J (\mathbf{r}) $ and $K (\mathbf{r}) $ representing the (redefined) Coulomb and exchange operators respectively
+\begin{align}
+	J (\mathbf{r})\phi (\mathbf{r}) &= 2 \sum_{l=1}^{N/2}\int{d^3r'\left|\phi_l(\mathbf{r'})\right|^2\frac{1}{\left|\mathbf{r}-\mathbf{r'}\right|}\phi(\mathbf{r})}\\
+	K (\mathbf{r})\phi (\mathbf{r}) &= \sum_{l =1}^{N/2}\int{d^3r'\phi_l^*(\mathbf{r'})\phi (\mathbf{r'})\frac{1}{\left|\mathbf{r}-\mathbf{r'}\right|}\phi_l (\mathbf{r})}
+	\label{eq:coulomb_exchange}
+\end{align}
+where $\phi_l$ represent the spatial part of the ansatz wave functions.
+Note that the sums run only to $N/2$ because of the previous sum over the spin degrees of freedom. From now on, sums over $k$ will be considered to extend to all different spatial orbitals (this is, half of the total number of orbitals). Thus, the ground state energy is given by
+%\begin{equation}
+%    E = 2\sum_k\mel{\phi_k}{h}{\phi_k}+\sum_k\left(2\mel{\phi_k}{J}{\phi_k}-\mel{\phi_k}{K}{\phi_k}\right)= \sum_k \left[\varepsilon_k + \mel{\phi_k}{h}{\phi_k}\right],
+%\end{equation}
+an analog expression to (\ref{eq:energies_heps}) except for a factor $2$.%where $\varepsilon_k$ are the eigenvalues of the redefined Fock operator $F$.  
+
+

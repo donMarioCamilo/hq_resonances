@@ -1,0 +1,58 @@
+\subsection{Hartree-Fock computer program}
+In this section the general structure of a Hartree-Fock computer program will be presented. Its flow chart can be found in figure \ref{fig:flowchart}, whereas in Appendix \ref{appendix:code} the \emph{Fortran} implementation is given. To check its validity, the ground state energy yielded for the helium atom and the hydrogen molecule will be compared with the bibliography at the end of the section.
+\begin{enumerate}
+    \item \textbf{Input data:} The first step in every Hartree-Fock program should be to present the problem to be solved. For this, the number of electrons $N$, the atomic numbers $Z_n$ and nuclei positions $\mathbf{R}_n$ must be introduced. If various nuclei are present in the problem, calculating the bond lengths or angles could be desired. If so, the following steps must be repeated for every nuclear configuration.
+    %Nosense to include next paragraph if Roothaan is not used
+    %Moreover, a certain basis set must be chosen for the specific problem. Most common basis sets are Slater type orbitals (STO), Gaussian type orbitals (GTO) and linear combinations of them. Several basis sets can be found at \cite{basissetexchange}.
+
+    \item \textbf{Calculate matrices:} All matrices which do not depend on the density matrix can be determined before entering the SCF loop. These are the overlap matrix $S_{pq}$, the uncoupled one-electron hamiltonian $h_{pq}$ and the two-electron integrals $\mel{pr}{g}{qs}$. For efficiency purposes, it should be taken into account that $S_{pq}$ and $h_{pq}$ are symmetric matrices, so that only $N(N+1)/2$ elements should be calculated. More importantly, the two-electron integrals respond to several symmetries: $p\longleftrightarrow q\;; \; \; r\longleftrightarrow s\;; \; \; p,q\longleftrightarrow r,s$. This way, roughly $N^4/8$ elements should be calculated \cite{computationalphysics}.
+
+    In this step internuclear repulsion shall as well be calculated.
+
+    \item \textbf{Bring overlap matrix to unit form:} For transforming the Roothaan equation to a standard eigenvalue equation, it is relevant to bring the overlap matrix to unit form. Also, this way one assures that the eigenvectors yielded by the equation are normalised via the overlap matrix. For bringing the overlap matrix to unit form, a transform matrix \textbf{X} is defined such that $\mathbf{X}^\dagger \mathbf{S}\mathbf{X} = \mathbf{I}$. 
+    
+    \begin{tcolorbox}[colback=blue!5!white,colframe=blue!1!white]
+        In this work the method of symmetric orthogonalisation will be considered, where $\mathbf{X}=\mathbf{S}^{-1/2}$. For finding the desired transformation matrix, the overlap matrix must be diagonalised first. This is, finding a unitary matrix $\mathbf{U}$ which satisfies $\mathbf{U}^\dagger\mathbf{S}\mathbf{U} = \mathbf{s}$, where $\mathbf{s}$ is the diagonalised overlap matrix. Since the overlap matrix's eigenvalues are always positive \cite{computationalphysics}, one can define its \emph{inverse square root} as a matrix with the inverse square root of the eigenvalues on the diagonal. From this follows transforming back the transformation matrix:
+        \begin{equation}
+            \mathbf{X} = \mathbf{S}^{-1/2} = \mathbf{U} \mathbf{s}^{-1/2} \mathbf{U}^\dagger
+        \end{equation}
+        and the transformation matrix $\mathbf{X}$ can then be easily obtained by diagonalising $\mathbf{S}$.
+    \end{tcolorbox}
+    \item \textbf{First guess for the density matrix:} For building the Fock matrix, a first guess for the density matrix must be done. It happens to be a reasonably good choice for most cases to neglect interelectronic interaction in the first iteration, such that the Fock matrix is identical to the uncoupled one-electron Hamiltonian $h$. By looking back at (\ref{eq:fock_matrix}) one can see that this is equivalent to considering all elements $P_{rs}=0$.
+    \item \textbf{SCF loop:} Once the relevant matrices are built, the self consistent field method is applied by finding new density matrices until convergence is met.
+    \begin{enumerate}
+        \item \textbf{Calculate the electron-electron repulsion matrix:} The Coulomb and exchange contribution to the Fock matrix can be stored, altogether with the density matrix, in an \emph{electron-electron repulsion matrix} $\mathbf{G}$, such that $F_{pq}=h_{pq}+G_{pq}$:
+    \begin{equation}
+        G_{pq} = \sum_{r,s}P_{rs}\left[\mel{pr}{g}{qs}-\frac{1}{2}\mel{pr}{g}{sq}\right]
+        \label{eq:two_electron_matrix}
+    \end{equation}
+    This way, the Fock matrix can be easily calculated. It should be noted that accessing the two-electron integrals can be a very time-consuming process for the computer. To improve this one can introduce a Yoshimine sort algorithm \cite{yoshimine}.%, or by simply storing the matrix elements with their corresponding indices.
+    \item \textbf{Solve the Roothaan equation:} The transformation matrix which brings $\mathbf{S}$ to unit form is useful for transforming the Roothaan equation $\mathbf{F C}=\varepsilon\mathbf{S C}$ to an ordinary eigenvalue equation. Then, the resulting eigenvectors can be transformed back and used for building the new density matrix. The structure is as follows:
+        \begin{tcolorbox}[colback=orange!5!white,colframe=orange!1!white]%orange!135black
+            Multiplying the Roothaan equation (\ref{eq:roothaan_equation}) with $\mathbf{X}^\dagger$ from the left and introducing the identity $\mathbf{X}\mathbf{X}^{-1}=\mathbf{I}$,
+            \begin{equation}
+                \mathbf{X}^\dagger\mathbf{F}\  \mathbf{X}\mathbf{X}^{-1} \mathbf{C} = \varepsilon \mathbf{X}^\dagger\mathbf{S}\  \mathbf{X}\mathbf{X}^{-1}\mathbf{C}
+            \end{equation}
+            which immediately delivers the desired ordinary eigenvalue equation:
+            \begin{align}\label{eq:transformed_roothaan}
+                \mathbf{F}'\mathbf{C}'&=\varepsilon\mathbf{C}',\mathrm{where}\\
+                \mathbf{F}'&=\mathbf{X}^\dagger\mathbf{F}\mathbf{X}\ \mathrm{and}\nonumber\\
+                \mathbf{C}'&=\mathbf{X}^{-1}\mathbf{C}\nonumber.
+            \end{align}
+            Now, transforming back the eigenvectors can be easily done, as $\mathbf{C} = \mathbf{X}\mathbf{C}'$.
+        \end{tcolorbox}
+    \item \textbf{Build a new density matrix:} The new density matrix can be calculated by its definition in (\ref{eq:density_matrix}), with the eigenvectors yielded by the Roothaan equation (\ref{eq:transformed_roothaan}).
+    \item \textbf{Check for convergence:} For achieving convergence Fock levels must not deviate much from one iteration to another. If convergence is not met, the SCF loop is repeated, taking the new density matrix as input.\\\\Some systems may not satisfy this convergence criteria though. In this case, instead of using the calculated density matrix for the next iteration, a weighted average between iterations can be used \cite{computationalphysics}.
+    \end{enumerate}
+    \item \textbf{Calculate the ground state energy:} If convergence is met, the energy can be obtained as
+    
+    \begin{align}
+	    	E &= \sum_{p,q}^MP_{pq} h_{pq} + \frac{1}{2}\sum_{p,q,r,s}^M P_{pq}P_{rs}\left[\mel{pr}{g}{qs}-\frac{1}{2}\mel{pr}{g}{sq}\right]+E_{nuc}\nonumber\\
+    	&= \frac{1}{2}\sum_{p,q}^MP_{pq} h_{pq}+\sum_k \varepsilon_k + E_{nuc}
+    		\label{eq:energy_computer}
+    \end{align}
+    where $P_{pq}$ are the elements of the new density matrix, $\varepsilon_k$ is the eigenvalue representing the k-th Fock level and $E_{nuc}$ is the repulsion energy between the nuclei for the given configuration.
+\end{enumerate}
+    
+
+

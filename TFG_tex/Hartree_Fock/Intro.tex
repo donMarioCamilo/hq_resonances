@@ -1,0 +1,8 @@
+\section{Hartree - Fock method}
+When dealing with a stationary Schrödinger equation, an analytical solution can only be found for simplified, specific problems such as the hydrogen atom. For more complex problems, the idea of an exact solution is discarded and approximate methods are adopted. One of main importance is the variational method. In it, a set of solutions restricted to a subspace of the Hilbert space is proposed, and then a solution which minimises the energy functional (\ref{eq:energy_functional}) is found within the subspace.
+\begin{equation}
+    E\left[\psi\right] = \frac{\ev{H}{\psi}}{\ip{\psi}}
+    \label{eq:energy_functional}
+\end{equation}
+Thus, under the Rayleigh-Ritz variational principle, the Hamiltonian expectation value from any ansatz wavefunction is an upper bound to the exact ground state energy \cite{griffiths,szabo}.\\\\
+In the spirit of the variational method, the Hartree-Fock method is the approach to the many-body problem presented in this work. The aim of this procedure is to find the solution wave functions in the form of an anti-symmetrised product of one-electron wave functions.
